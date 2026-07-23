@@ -322,6 +322,35 @@ function(a,b,c){if(!Vd(b))throw Error(n(200));return Wd(null,a,b,!1,c)};Q.unmoun
     #recu-print, #recu-print * { visibility: visible; }
     #recu-print { position: fixed; top: 0; left: 0; width: 100%; }
   }
+
+  @media (max-width: 768px) {
+    .app-container { flex-direction: column !important; }
+    .sidebar { width: 100% !important; flex-direction: row !important; align-items: center !important; justify-content: space-between !important; padding: 8px 12px !important; gap: 6px !important; flex-wrap: nowrap !important; overflow-x: auto; }
+    .sidebar .brand { padding: 0 !important; flex-shrink: 0; }
+    .brand-sub { display: none !important; }
+    .sidebar-nav { flex-direction: row !important; flex: none !important; gap: 2px !important; overflow-x: auto; }
+    .nav-item, .nav-item[class] { padding: 8px !important; }
+    .nav-label { display: none !important; }
+    .sidebar-footer { flex-direction: row !important; border-top: none !important; padding-top: 0 !important; gap: 8px !important; flex-shrink: 0; }
+    .session-badge { display: none !important; }
+    .logout-label { display: none !important; }
+    .logout-btn { padding: 8px !important; }
+    .main-content { padding: 14px !important; }
+    .kpi-row { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+    .dash-grid { grid-template-columns: 1fr !important; }
+    .card-grid { grid-template-columns: 1fr !important; }
+    .toolbar { flex-direction: column !important; align-items: stretch !important; }
+    .search-box { min-width: 0 !important; width: 100% !important; }
+    .form-row { grid-template-columns: 1fr !important; }
+    .modal-overlay { padding: 10px !important; align-items: flex-end !important; }
+    .modal-box, .modal-box-sm { width: 100% !important; max-height: 85vh !important; overflow-y: auto !important; border-radius: 16px 16px 0 0 !important; }
+    .table-scroll { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+    .data-table { min-width: 640px !important; }
+  }
+
+  @media (max-width: 420px) {
+    .kpi-row { grid-template-columns: 1fr !important; }
+  }
 </style>
 </head>
 <body>
@@ -927,19 +956,24 @@ function ScolaPay() {
   const totalAttendu = students.reduce((sum, s) => sum + s.fraisTotal, 0);
   const totalEncaisse = payments.filter(p => p.statut === "Validé").reduce((s, p) => s + p.montant, 0);
   return /*#__PURE__*/React.createElement("div", {
-    style: S.app
+    style: S.app,
+    className: "app-container"
   }, /*#__PURE__*/React.createElement("aside", {
-    style: S.sidebar
+    style: S.sidebar,
+    className: "sidebar"
   }, /*#__PURE__*/React.createElement("div", {
-    style: S.brand
+    style: S.brand,
+    className: "brand"
   }, /*#__PURE__*/React.createElement("div", {
     style: S.brandMark
   }, "SP"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: S.brandName
   }, "ScolaPay"), /*#__PURE__*/React.createElement("div", {
-    style: S.brandSub
+    style: S.brandSub,
+    className: "brand-sub"
   }, "AB Soft Work"))), /*#__PURE__*/React.createElement("nav", {
-    style: S.nav
+    style: S.nav,
+    className: "sidebar-nav"
   }, isAdmin && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(NavItem, {
     icon: "trending-up",
     label: "Tableau de bord",
@@ -978,21 +1012,27 @@ function ScolaPay() {
       setSelectedStudent(null);
     }
   })), /*#__PURE__*/React.createElement("div", {
-    style: S.sidebarFooter
+    style: S.sidebarFooter,
+    className: "sidebar-footer"
   }, /*#__PURE__*/React.createElement("div", {
-    style: S.sessionBadge
+    style: S.sessionBadge,
+    className: "session-badge"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "shield-check",
     size: 14,
     color: "#E8763C"
   }), /*#__PURE__*/React.createElement("span", null, isAdmin ? "Session administrateur" : "Session élève")), /*#__PURE__*/React.createElement("button", {
     style: S.logoutBtn,
+    className: "logout-btn",
     onClick: handleLogout
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "log-out",
     size: 15
-  }), " D\xE9connexion"))), /*#__PURE__*/React.createElement("main", {
-    style: S.main
+  }), " ", /*#__PURE__*/React.createElement("span", {
+    className: "logout-label"
+  }, "D\xE9connexion")))), /*#__PURE__*/React.createElement("main", {
+    style: S.main,
+    className: "main-content"
   }, tab === "dashboard" && isAdmin && /*#__PURE__*/React.createElement(Dashboard, {
     students: students,
     payments: payments,
@@ -1189,7 +1229,8 @@ function Dashboard({
     title: "Tableau de bord",
     subtitle: "Vue d'ensemble de la scolarit\xE9 \u2014 ann\xE9e 2026 / 2027"
   }), /*#__PURE__*/React.createElement("div", {
-    style: S.kpiRow
+    style: S.kpiRow,
+    className: "kpi-row"
   }, /*#__PURE__*/React.createElement(KpiCard, {
     icon: "users",
     label: "\xC9l\xE8ves inscrits",
@@ -1211,7 +1252,8 @@ function Dashboard({
     value: alerts.length,
     accent: "#D64545"
   })), /*#__PURE__*/React.createElement("div", {
-    style: S.dashGrid
+    style: S.dashGrid,
+    className: "dash-grid"
   }, /*#__PURE__*/React.createElement("div", {
     style: S.panel
   }, /*#__PURE__*/React.createElement("div", {
@@ -1324,7 +1366,8 @@ function EleveDashboard({
     title: `Bonjour, ${student.prenom}`,
     subtitle: `${student.niveau} · ${student.classe} — Matricule ${student.matricule}`
   }), /*#__PURE__*/React.createElement("div", {
-    style: S.kpiRow
+    style: S.kpiRow,
+    className: "kpi-row"
   }, /*#__PURE__*/React.createElement(KpiCard, {
     icon: "wallet",
     label: "Total pay\xE9",
@@ -1346,7 +1389,8 @@ function EleveDashboard({
     value: next ? new Date(next.dateLimite).toLocaleDateString("fr-FR") : "Aucune",
     accent: "#3D4759"
   })), /*#__PURE__*/React.createElement("div", {
-    style: S.dashGrid
+    style: S.dashGrid,
+    className: "dash-grid"
   }, /*#__PURE__*/React.createElement("div", {
     style: S.panel
   }, /*#__PURE__*/React.createElement("div", {
@@ -1466,9 +1510,11 @@ function StudentList({
     title: isAdmin ? "Registre des élèves" : "Mon profil",
     subtitle: isAdmin ? `${students.length} élève(s) au registre` : "Vos informations et votre situation de scolarité"
   }), isAdmin && /*#__PURE__*/React.createElement("div", {
-    style: S.toolbar
+    style: S.toolbar,
+    className: "toolbar"
   }, /*#__PURE__*/React.createElement("div", {
-    style: S.searchBox
+    style: S.searchBox,
+    className: "search-box"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "search",
     size: 15,
@@ -1485,7 +1531,8 @@ function StudentList({
     name: "plus",
     size: 15
   }), " Nouvel \xE9l\xE8ve")), /*#__PURE__*/React.createElement("div", {
-    style: S.cardGrid
+    style: S.cardGrid,
+    className: "card-grid"
   }, students.map(s => {
     const paid = paidFor(s, payments);
     const pct = Math.min(100, Math.round(paid / s.fraisTotal * 100));
@@ -1586,7 +1633,8 @@ function StudentProfile({
     name: "trash-2",
     size: 15
   })))), /*#__PURE__*/React.createElement("div", {
-    style: S.dashGrid
+    style: S.dashGrid,
+    className: "dash-grid"
   }, /*#__PURE__*/React.createElement("div", {
     style: S.panel
   }, /*#__PURE__*/React.createElement("div", {
@@ -1745,7 +1793,8 @@ function PaymentsView({
     title: "Paiements",
     subtitle: `${payments.length} transaction(s) enregistrée(s)`
   }), /*#__PURE__*/React.createElement("div", {
-    style: S.toolbar
+    style: S.toolbar,
+    className: "toolbar"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -1767,8 +1816,11 @@ function PaymentsView({
     size: 15
   }), " Exporter")), /*#__PURE__*/React.createElement("div", {
     style: S.panel
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "table-scroll"
   }, /*#__PURE__*/React.createElement("table", {
-    style: S.table
+    style: S.table,
+    className: "data-table"
   }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
     style: S.th
   }, "\xC9l\xE8ve"), /*#__PURE__*/React.createElement("th", {
@@ -1830,7 +1882,7 @@ function PaymentsView({
       name: "receipt",
       size: 13
     }), " Re\xE7u")));
-  }))), rows.length === 0 && /*#__PURE__*/React.createElement("div", {
+  })))), rows.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: S.emptyNote
   }, "Aucune transaction pour ce filtre.")));
 }
@@ -1957,9 +2009,11 @@ function StudentFormModal({
   }
   return /*#__PURE__*/React.createElement("div", {
     style: S.modalOverlay,
+    className: "modal-overlay",
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: S.modalBox,
+    className: "modal-box",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
     style: S.modalHead
@@ -1982,7 +2036,8 @@ function StudentFormModal({
       paddingRight: 4
     }
   }, /*#__PURE__*/React.createElement("div", {
-    style: S.formRow
+    style: S.formRow,
+    className: "form-row"
   }, /*#__PURE__*/React.createElement("label", {
     style: S.label
   }, "Nom", /*#__PURE__*/React.createElement("input", {
@@ -1998,7 +2053,8 @@ function StudentFormModal({
     onChange: e => set("prenom", e.target.value),
     required: true
   }))), /*#__PURE__*/React.createElement("div", {
-    style: S.formRow
+    style: S.formRow,
+    className: "form-row"
   }, /*#__PURE__*/React.createElement("label", {
     style: S.label
   }, "Niveau", /*#__PURE__*/React.createElement("select", {
@@ -2025,7 +2081,8 @@ function StudentFormModal({
   })), /*#__PURE__*/React.createElement("div", {
     style: S.formDivider
   }, "Parent / Tuteur"), /*#__PURE__*/React.createElement("div", {
-    style: S.formRow
+    style: S.formRow,
+    className: "form-row"
   }, /*#__PURE__*/React.createElement("label", {
     style: S.label
   }, "Nom complet", /*#__PURE__*/React.createElement("input", {
@@ -2040,7 +2097,8 @@ function StudentFormModal({
     value: form.parent.lien,
     onChange: e => setParent("lien", e.target.value)
   }, /*#__PURE__*/React.createElement("option", null, "P\xE8re"), /*#__PURE__*/React.createElement("option", null, "M\xE8re"), /*#__PURE__*/React.createElement("option", null, "Tuteur")))), /*#__PURE__*/React.createElement("div", {
-    style: S.formRow
+    style: S.formRow,
+    className: "form-row"
   }, /*#__PURE__*/React.createElement("label", {
     style: S.label
   }, "T\xE9l\xE9phone", /*#__PURE__*/React.createElement("input", {
@@ -2104,9 +2162,11 @@ function PaymentModal({
   }
   return /*#__PURE__*/React.createElement("div", {
     style: S.modalOverlay,
+    className: "modal-overlay",
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: S.modalBoxSm,
+    className: "modal-box-sm",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
     style: S.modalHead
@@ -2222,9 +2282,11 @@ function RecuModal({
   const op = OPERATEURS.find(o => o.id === payment.methode);
   return /*#__PURE__*/React.createElement("div", {
     style: S.modalOverlay,
+    className: "modal-overlay",
     onClick: onClose
   }, /*#__PURE__*/React.createElement("div", {
     style: S.modalBoxSm,
+    className: "modal-box-sm",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
     style: S.modalHead
@@ -2313,11 +2375,14 @@ function NavItem({
 }) {
   return /*#__PURE__*/React.createElement("button", {
     style: active ? S.navItemActive : S.navItem,
+    className: "nav-item",
     onClick: onClick
   }, /*#__PURE__*/React.createElement(Icon, {
     name: icon,
     size: 17
-  }), " ", label);
+  }), " ", /*#__PURE__*/React.createElement("span", {
+    className: "nav-label"
+  }, label));
 }
 
 /* ---------- STYLES ---------- */
