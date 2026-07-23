@@ -4,6 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ScolaPay — Gestion de la scolarité</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#E8763C">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script>/**
  * @license React
  * react.production.min.js
@@ -841,11 +845,6 @@ function ScolaPay() {
     setSession(sess);
     setTab(sess.role === "admin" ? "dashboard" : "students");
   }
-  if (!session) return /*#__PURE__*/React.createElement(LoginScreen, {
-    students: students,
-    onLogin: handleLogin
-  });
-  const isAdmin = session.role === "admin";
   function handleLogout() {
     setSession(null);
     setTab("dashboard");
@@ -918,6 +917,11 @@ function ScolaPay() {
     });
     return list.sort((a, b) => a.joursRestants - b.joursRestants);
   }, [students, payments]);
+  if (!session) return /*#__PURE__*/React.createElement(LoginScreen, {
+    students: students,
+    onLogin: handleLogin
+  });
+  const isAdmin = session.role === "admin";
   const visibleStudents = isAdmin ? students : students.filter(s => s.id === session.studentId);
   const filteredStudents = visibleStudents.filter(s => `${s.nom} ${s.prenom} ${s.matricule} ${s.classe}`.toLowerCase().includes(search.toLowerCase()));
   const totalAttendu = students.reduce((sum, s) => sum + s.fraisTotal, 0);
@@ -999,7 +1003,7 @@ function ScolaPay() {
       setSelectedStudent(s);
       setTab("students");
     }
-  }), tab === "students" && !selectedStudent && /*#__PURE__*/React.createElement(StudentList, {
+  }), tab === "students" && !selectedStudent && isAdmin && /*#__PURE__*/React.createElement(StudentList, {
     isAdmin: isAdmin,
     students: filteredStudents,
     payments: payments,
@@ -1010,6 +1014,13 @@ function ScolaPay() {
       setEditing(null);
       setShowForm(true);
     }
+  }), tab === "students" && !selectedStudent && !isAdmin && filteredStudents[0] && /*#__PURE__*/React.createElement(EleveDashboard, {
+    student: filteredStudents[0],
+    payments: payments,
+    onOpenProfile: () => setSelectedStudent(filteredStudents[0]),
+    onPay: () => setPayFlow({
+      studentId: filteredStudents[0].id
+    })
   }), tab === "students" && selectedStudent && /*#__PURE__*/React.createElement(StudentProfile, {
     student: selectedStudent,
     payments: payments.filter(p => p.studentId === selectedStudent.id),
@@ -1284,6 +1295,161 @@ function KpiCard({
   }, value), /*#__PURE__*/React.createElement("div", {
     style: S.kpiLabel
   }, label)));
+}
+
+/* ---------- TABLEAU DE BORD ELEVE (enrichi) ---------- */
+function nextDueEcheance(student, payments) {
+  const paid = paidFor(student, payments);
+  let running = 0;
+  for (const e of student.echeances) {
+    running += e.montant;
+    if (paid < running) return e;
+  }
+  return null;
+}
+function EleveDashboard({
+  student,
+  payments,
+  onOpenProfile,
+  onPay
+}) {
+  const studentPayments = payments.filter(p => p.studentId === student.id).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const paid = paidFor(student, payments);
+  const solde = student.fraisTotal - paid;
+  const pct = Math.min(100, Math.round(paid / student.fraisTotal * 100));
+  const next = nextDueEcheance(student, payments);
+  const last = studentPayments[0];
+  const lastOp = last ? OPERATEURS.find(o => o.id === last.methode) : null;
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PageHeader, {
+    title: `Bonjour, ${student.prenom}`,
+    subtitle: `${student.niveau} · ${student.classe} — Matricule ${student.matricule}`
+  }), /*#__PURE__*/React.createElement("div", {
+    style: S.kpiRow
+  }, /*#__PURE__*/React.createElement(KpiCard, {
+    icon: "wallet",
+    label: "Total pay\xE9",
+    value: fmt(paid),
+    accent: "#2F9E44"
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    icon: "credit-card",
+    label: "Solde restant",
+    value: fmt(Math.max(0, solde)),
+    accent: solde > 0 ? "#E8763C" : "#2F9E44"
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    icon: "trending-up",
+    label: "Progression",
+    value: `${pct}%`,
+    accent: "#1B2A4A"
+  }), /*#__PURE__*/React.createElement(KpiCard, {
+    icon: "calendar",
+    label: "Prochaine \xE9ch\xE9ance",
+    value: next ? new Date(next.dateLimite).toLocaleDateString("fr-FR") : "Aucune",
+    accent: "#3D4759"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: S.dashGrid
+  }, /*#__PURE__*/React.createElement("div", {
+    style: S.panel
+  }, /*#__PURE__*/React.createElement("div", {
+    style: S.panelHead
+  }, "Ma situation financi\xE8re"), /*#__PURE__*/React.createElement("div", {
+    style: S.progressOuter
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...S.progressInner,
+      width: `${pct}%`,
+      background: pct === 100 ? "#2F9E44" : "#E8763C"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: S.progressLabel
+  }, fmt(paid), " r\xE9gl\xE9 sur ", fmt(student.fraisTotal), " (", pct, "%)"), next ? /*#__PURE__*/React.createElement("div", {
+    style: S.soldeBox
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: S.soldeLabel
+  }, next.label, " \u2014 \xE9ch\xE9ance ", new Date(next.dateLimite).toLocaleDateString("fr-FR")), /*#__PURE__*/React.createElement("div", {
+    style: S.soldeValue
+  }, fmt(next.montant))), solde > 0 && /*#__PURE__*/React.createElement("button", {
+    style: S.primaryBtnSm,
+    onClick: onPay
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "smartphone",
+    size: 15
+  }), " Payer maintenant")) : /*#__PURE__*/React.createElement("div", {
+    style: S.soldeBox
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: S.soldeLabel
+  }, "Scolarit\xE9"), /*#__PURE__*/React.createElement("div", {
+    style: S.soldeValue
+  }, "Enti\xE8rement r\xE9gl\xE9e"))), /*#__PURE__*/React.createElement("div", {
+    style: S.panelHead2
+  }, "\xC9ch\xE9ancier"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, student.echeances.map((e, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: S.niveauRow
+  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement(Icon, {
+    name: "calendar",
+    size: 14,
+    style: {
+      marginRight: 8
+    }
+  }), e.label, " \u2014 ", new Date(e.dateLimite).toLocaleDateString("fr-FR")), /*#__PURE__*/React.createElement("span", {
+    style: S.niveauCount
+  }, fmt(e.montant))))), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...S.secondaryBtnSm,
+      marginTop: 16
+    },
+    onClick: onOpenProfile
+  }, "Voir mon profil complet")), /*#__PURE__*/React.createElement("div", {
+    style: S.panel
+  }, /*#__PURE__*/React.createElement("div", {
+    style: S.panelHead
+  }, "Dernier paiement"), last ? /*#__PURE__*/React.createElement("div", {
+    style: S.paymentRow
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...S.opDot,
+      background: lastOp ? lastOp.color : "#8890A0"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: S.paymentLine1
+  }, fmt(last.montant), " ", /*#__PURE__*/React.createElement("span", {
+    style: S.paymentMethode
+  }, "\xB7 ", lastOp ? lastOp.label : last.methode)), /*#__PURE__*/React.createElement("div", {
+    style: S.paymentLine2
+  }, new Date(last.date).toLocaleDateString("fr-FR"), " \xB7 r\xE9f. ", last.reference)), /*#__PURE__*/React.createElement("span", {
+    style: S.badgeValide
+  }, last.statut)) : /*#__PURE__*/React.createElement("div", {
+    style: S.emptyNote
+  }, "Aucun paiement enregistr\xE9 pour l'instant."), /*#__PURE__*/React.createElement("div", {
+    style: S.panelHead2
+  }, "Parent / Tuteur"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement(InfoRow, {
+    icon: "users",
+    label: "Nom",
+    value: `${student.parent.nom} (${student.parent.lien})`
+  }), /*#__PURE__*/React.createElement(InfoRow, {
+    icon: "phone",
+    label: "T\xE9l\xE9phone",
+    value: student.parent.tel
+  }), /*#__PURE__*/React.createElement(InfoRow, {
+    icon: "mail",
+    label: "E-mail",
+    value: student.parent.email
+  })))));
 }
 
 /* ---------- LISTE / CRUD ELEVES ---------- */
@@ -1763,10 +1929,31 @@ function StudentFormModal({
       }
     }));
   }
+  function buildEcheances(total) {
+    total = Number(total) || 0;
+    const share = Math.round(total / 3);
+    const rest = total - share * 2;
+    return [{
+      label: "1er versement",
+      montant: share,
+      dateLimite: "2026-09-15"
+    }, {
+      label: "2e versement",
+      montant: share,
+      dateLimite: "2026-12-15"
+    }, {
+      label: "3e versement",
+      montant: rest,
+      dateLimite: "2027-03-15"
+    }];
+  }
   function submit(e) {
     e.preventDefault();
     if (!form.nom || !form.prenom || !form.classe || !form.parent.tel) return;
-    onSave(form);
+    onSave({
+      ...form,
+      echeances: buildEcheances(form.fraisTotal)
+    });
   }
   return /*#__PURE__*/React.createElement("div", {
     style: S.modalOverlay,
